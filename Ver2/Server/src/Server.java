@@ -14,7 +14,7 @@ public class Server implements Runnable {
     public Server(int size, ArrayList<Number> serverData) {
         try {
             serverSocket = new ServerSocket();
-            SocketAddress address = new InetSocketAddress("192.168.43.57", 80);
+            SocketAddress address = new InetSocketAddress("localhost", 6666);
             serverSocket.bind(address);
             this.serverData = serverData;
             this.size = size - 1;
