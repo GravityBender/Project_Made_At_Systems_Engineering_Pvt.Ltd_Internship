@@ -15,7 +15,7 @@ public class ClientHandler implements Runnable {
         try {
             this.socket = socket;
             this.dout = new DataOutputStream(this.socket.getOutputStream());
-            this.size = size;
+            this.size = 0;
             this.serverData = serverData;
         } catch (IOException e) {
             closeLeaks(this.socket, this.dout);
@@ -38,7 +38,7 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         try {
-            while (true) {
+            while (size < serverData.size()) {
                 double y = (double) serverData.get(size);
                 // int j = 0;
                 Thread.sleep(TimeUnit.MILLISECONDS.toMillis(100));
@@ -55,6 +55,13 @@ public class ClientHandler implements Runnable {
             }
         } catch (IOException | InterruptedException e) {
             // TODO: handle exception
+        } finally {
+            try {
+                dout.close();
+            } catch (IOException e) {
+                // Do nothing
+            }
+
         }
     }
 }
