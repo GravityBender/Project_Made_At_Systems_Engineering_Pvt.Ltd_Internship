@@ -33,7 +33,7 @@ public class App extends Application {
     private ConcurrentLinkedQueue<Number> dataQ;
     private AddToQueue addToQueue;
     private Server server;
-    private int seriesData = 0;
+    private double seriesData = 0.00;
     private Thread dataThread;
     private ArrayList<Number> serverData;
     // private int qSize = 0;
@@ -159,13 +159,14 @@ public class App extends Application {
                 break;
             }
             final double dataValue = (double) dataQ.remove();
-            seriesData += 1;
+
             System.out.println(seriesData + " " + dataValue);
             dSeries.getData().add(new XYChart.Data<Number, Number>(seriesData,
                     dataValue));
+            seriesData += 0.01;
         }
 
-        if (seriesData > frequency * 3) {
+        if (seriesData > frequency * 100) {
             dSeries.getData().remove(0);
             try {
                 Thread.sleep(100);
@@ -175,7 +176,7 @@ public class App extends Application {
         }
 
         xAxis.setLowerBound(seriesData - frequency);
-        xAxis.setUpperBound(seriesData - 1);
+        xAxis.setUpperBound(seriesData - 0.01);
 
     }
 
@@ -185,13 +186,14 @@ public class App extends Application {
 
     private class AddToQueue implements Runnable {
 
-        private int i = 0;
+        private double i = 0.00;
 
         @Override
         public void run() {
             try {
                 while (!Thread.interrupted()) {
-                    double y = (Math.sin((i++ * 2 * Math.PI) / frequency)) * (amplitude);
+                    double y = (Math.sin((i * 2 * Math.PI) * frequency)) * (amplitude);
+                    i += 0.01;
                     dataQ.add(y);
                     serverData.add(y);
                     // qSize = dataQ.size();
