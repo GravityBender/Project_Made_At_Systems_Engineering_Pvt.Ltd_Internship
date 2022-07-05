@@ -1,3 +1,6 @@
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -23,21 +26,23 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.stage.FileChooser.ExtensionFilter;
 
-/**
- * App
- */
 public class App extends Application {
 
     private BorderPane root;
     private Client client;
-    private ConcurrentLinkedQueue<Number> dataQ;
-    private ExecutorService executor;
+    private ConcurrentLinkedQueue<Number> dataQ; // Queue in which server data is stored
+    private ExecutorService executor; // Executor object to run Client Socket on another thread other than JavaFX
+                                      // thread
     private double xValue = 0.00;
-    XYChart.Series<Number, Number> dataSeries;
+    XYChart.Series<Number, Number> dataSeries; // Data Series for the first chart to be plotted
     private Button proceedBtn;
+    private Stage globalWindow;
 
+    // Method to initialize data members
     public void init() {
         root = new BorderPane();
         dataQ = new ConcurrentLinkedQueue<>();
@@ -47,10 +52,12 @@ public class App extends Application {
         proceedBtn.setDisable(true);
     }
 
+    // start function for the JavaFX application
     @Override
     public void start(Stage window) {
 
         init();
+        globalWindow = window;
 
         firstScreen();
 
@@ -60,6 +67,7 @@ public class App extends Application {
         window.show();
     }
 
+    // Method for displaying the first screen of the application
     private void firstScreen() {
         FlowPane fPane1 = new FlowPane();
 
@@ -94,6 +102,8 @@ public class App extends Application {
             String ip = "";
             int port = 0;
 
+            // Check if the TextFields of the ip address and port are not null and are
+            // Strings and integers respectively
             if (ipField.getText().toString() != "") {
                 ip = ipField.getText().toString();
                 ipFlag = true;
@@ -113,6 +123,8 @@ public class App extends Application {
                 portFlag = false;
             }
 
+            // If entered ip address and port number are not null and are string and integer
+            // respectively then verify the validity of the said server
             if (ipFlag && portFlag) {
                 if (verifyServer(ip, port)) {
                     secondscreen();
@@ -122,22 +134,33 @@ public class App extends Application {
 
     }
 
+    // Method to verify the validity of the entered ip address and port number of
+    // the server
     private boolean verifyServer(String ip, int port) {
         try {
 
+            // Pass the ip address, port number, Queue and button object to Cliet
+            // Constructor
             client = new Client(ip, port, dataQ, proceedBtn);
             client.openSocket();
 
-            if (!client.checkIfConnected()) {
-                Alert alert = new Alert(AlertType.WARNING, "Server Not Reachable!",
-                        ButtonType.CLOSE, ButtonType.OK);
-                alert.show();
-            } else {
-                executor.execute(client);
-                return true;
-            }
+            // if (!client.checkIfConnected()) {
+            // Alert alert = new Alert(AlertType.WARNING, "Server Not Reachable!",
+            // ButtonType.CLOSE, ButtonType.OK);
+            // alert.show();
+            // System.out.println("Lol");
+            // } else {
+            // executor.execute(client);
+            // System.out.println(lol);
+            // return true;
+            // }
+
+            executor.execute(client);
+            System.out.println("lol");
+            return true;
 
         } catch (SocketException e) {
+            // Display an Alert Box if there was a problem in connecting to the network
             Alert alert = new Alert(AlertType.WARNING, "Network Not Reachable!",
                     ButtonType.CLOSE, ButtonType.OK);
             alert.show();
@@ -147,9 +170,11 @@ public class App extends Application {
         return false;
     }
 
+    // Method to display the second screen of the application
     private void secondscreen() {
         root.setCenter(null);
 
+        // Display the incoming data in a chart
         Axes axes = new Axes();
         Charts chart1 = new Charts(axes);
         chart1.setDataSeries(dataSeries);
@@ -166,10 +191,43 @@ public class App extends Application {
         });
     }
 
+    // Method to animate the LineChart using the AnimationTimer interface
+    // Calls the addDataToSeries method to populate the data series for the chart
+    private void prepareData() {
+        new AnimationTimer() {
+            @Override
+            public void handle(final long now) {
+                addDataToSeries();
+            }
+        }.start();
+    }
+
+    // Method to populate the data series with the incoming chart data from the
+    // server using the dataQ passed to the client object
+    // Here dataQ object is simultaneously being populated with the server data as
+    // well as providing data to the data series of the chart
+    private void addDataToSeries() {
+
+        for (int i = 0; i < 20; i++) {
+            if (dataQ.isEmpty()) {
+                break;
+            }
+            final double dataValue = (double) dataQ.remove();
+            // System.out.println(dataValue);
+            dataSeries.getData()
+                    .add(new XYChart.Data<Number, Number>(xValue, dataValue));
+            xValue += 0.01;
+        }
+
+    }
+
+    // Method to display the third screen of the application
     private void thirdScreen() {
         root.setCenter(null);
         root.setBottom(null);
 
+        // Chart object responsible to display the original chart in secondScreen()
+        // method
         Charts chart2 = new Charts(new Axes());
         XYChart.Series<Number, Number> series = new XYChart.Series<>();
         dataSeries.getData().forEach(item -> {
@@ -178,6 +236,8 @@ public class App extends Application {
 
         chart2.setDataSeries(series);
 
+        // Chart object responsible to display the DFT of the original chart in
+        // secondScreen() method
         Charts chart3 = new Charts(new Axes());
         XYChart.Series<Number, Number> dftSeries = new XYChart.Series<>();
         chart3.setDataSeries(dftSeries);
@@ -230,6 +290,7 @@ public class App extends Application {
 
     }
 
+    // Method to display the fourth screen of the application
     private void fourthScreen() {
         root.setCenter(null);
         root.setBottom(null);
@@ -272,11 +333,12 @@ public class App extends Application {
         sinRadioBtn.setSelected(true);
 
         Button sbmBtn = new Button("Plot Graph");
+        Button skipBtn = new Button("Skip");
 
         VBox vBox1 = new VBox();
         vBox1.setSpacing(10);
         vBox1.setAlignment(Pos.CENTER);
-        vBox1.getChildren().addAll(fPane1, fPane2, fPane3, sbmBtn);
+        vBox1.getChildren().addAll(fPane1, fPane2, fPane3, sbmBtn, skipBtn);
 
         Button proceedBtn = new Button("Proceed");
 
@@ -317,10 +379,15 @@ public class App extends Application {
             });
         });
 
+        skipBtn.setOnAction((e) -> {
+            fifthScreen(chart4);
+        });
+
         root.setBottom(vBox1);
 
     }
 
+    // Method to display the fifth screen of the application
     private void fifthScreen(Charts modifiedChart) {
         root.setCenter(null);
         root.setBottom(null);
@@ -338,6 +405,7 @@ public class App extends Application {
         Button btn1 = new Button("View Original graph");
         Button btn2 = new Button("View DFT graph");
         Button btn3 = new Button("Back to Main Graph");
+        Button btn4 = new Button("Export as .csv");
 
         HBox hBox1 = new HBox();
         hBox1.setSpacing(10);
@@ -349,7 +417,11 @@ public class App extends Application {
             root.setCenter(null);
             root.setCenter(modifiedChart.getLineChart());
             hBox1.getChildren().clear();
-            hBox1.getChildren().addAll(btn2, btn3);
+            hBox1.getChildren().addAll(btn2, btn3, btn4);
+
+            btn4.setOnAction((e) -> {
+                saveAsCSV(modifiedChart.getDataSeries());
+            });
 
         });
 
@@ -357,13 +429,41 @@ public class App extends Application {
             root.setCenter(null);
             root.setCenter(chart5.getLineChart());
             hBox1.getChildren().clear();
-            hBox1.getChildren().addAll(btn1, btn3);
+            hBox1.getChildren().addAll(btn1, btn3, btn4);
+
+            btn4.setOnAction((e) -> {
+                saveAsCSV(chart5.getDataSeries());
+            });
 
         });
 
         btn3.setOnAction((e) -> {
             thirdScreen();
         });
+    }
+
+    // Method to export the chart data series in the form of a .csv file and save it
+    // in the location specified by the user
+    private void saveAsCSV(XYChart.Series<Number, Number> series) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save As");
+        fileChooser.getExtensionFilters().addAll(new ExtensionFilter("CSV files (*csv)", ".csv"));
+        File file = fileChooser.showSaveDialog(globalWindow);
+
+        if (file != null) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                series.getData().forEach(item -> {
+                    try {
+                        writer.write(item.getXValue() + "," + item.getYValue());
+                        writer.newLine();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void populateDataSeriesForChart3(XYChart.Series<Number, Number> dataSeries1,
@@ -398,30 +498,7 @@ public class App extends Application {
     // return (Math.floor(Math.log(size) / Math.log(2)));
     // }
 
-    private void prepareData() {
-        new AnimationTimer() {
-            @Override
-            public void handle(final long now) {
-                addDataToSeries();
-            }
-        }.start();
-    }
-
-    private void addDataToSeries() {
-
-        for (int i = 0; i < 20; i++) {
-            if (dataQ.isEmpty()) {
-                break;
-            }
-            final double dataValue = (double) dataQ.remove();
-            // System.out.println(dataValue);
-            dataSeries.getData()
-                    .add(new XYChart.Data<Number, Number>(xValue, dataValue));
-            xValue += 0.01;
-        }
-
-    }
-
+    // Main function
     public static void main(String[] args) {
         launch(args);
     }
