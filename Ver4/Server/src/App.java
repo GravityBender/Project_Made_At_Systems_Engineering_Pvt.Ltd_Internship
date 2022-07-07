@@ -105,10 +105,10 @@ public class App extends Application {
 
         FlowPane fPane3 = new FlowPane();
         fPane3.setAlignment(Pos.CENTER);
-        Label sampleLabel = new Label("Frequency: ");
+        Label sampleLabel = new Label("Sampling Frequency: ");
         TextField sampleField = new TextField();
         Label tempLabel1 = new Label("in Hz");
-        freqField.setPromptText("Sampling Frequency");
+        sampleField.setPromptText("Sampling Frequency");
         fPane3.getChildren().addAll(sampleLabel, sampleField, tempLabel1);
 
         Button sbmBtn = new Button("Plot Graph");
@@ -234,6 +234,8 @@ public class App extends Application {
         vBox1.setAlignment(Pos.CENTER);
         vBox1.getChildren().addAll(fPane1, fPane2, fPane3, sbmBtn, shareButton);
 
+        sChart.getData().removeAll(dSeries);
+        sChart.getData().add(tempSeries);
         sbmBtn.setOnAction((e1) -> {
 
             try {
@@ -278,6 +280,9 @@ public class App extends Application {
         shareButton.setOnAction((e) -> {
             server = new Server(serverData.size(), serverData);
             executor.execute(server);
+            Alert alert = new Alert(AlertType.INFORMATION, "Server started!",
+                    ButtonType.CLOSE, ButtonType.OK);
+            alert.show();
         });
 
         root.setBottom(vBox1);

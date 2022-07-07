@@ -44,7 +44,7 @@ public class ClientHandler implements Runnable {
             while (size < serverData.size()) {
                 double y = (double) serverData.get(size);
                 // int j = 0;
-                Thread.sleep(TimeUnit.MILLISECONDS.toMillis(50)); // Sleep the thread to ensure the main application
+                Thread.sleep(TimeUnit.MILLISECONDS.toMillis(40)); // Sleep the thread to ensure the main application
                                                                   // thread is able to add data into the series
                 // while (j < 1000) {
                 // j++;// Do nothing
