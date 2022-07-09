@@ -1,3 +1,5 @@
+package com.systemsengineering;
+
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -35,7 +37,6 @@ public class App extends Application {
     private XYChart.Series<Number, Number> tempSeries; // Object to store the data series
     private ExecutorService executor; // Executor for executing the Server code
     private ConcurrentLinkedQueue<Number> dataQ; // Thread safe Queue in which data is added
-    private AddToQueue addToQueue; // Private inner class object for adding data into dataQ object
     private Server server; // Object responsible for the Server
     private double seriesData = 0.00; // Flag variable used as index for adding data
     private Thread dataThread; // Thread responsible for animating the graph plotting action
@@ -131,7 +132,7 @@ public class App extends Application {
                 frequency = Double.parseDouble(freqField.getText().toString());
                 samplingFreq = Double.parseDouble(sampleField.getText().toString());
 
-                System.out.println(amplitude + " " + frequency);
+//                System.out.println(amplitude + " " + frequency);
 
                 secondScreen(); // Calls the method responsible to display the second screen
             } else {
@@ -148,7 +149,8 @@ public class App extends Application {
     private void secondScreen() {
 
         root.setCenter(sChart); // Set the line chart object to the center of the borderpane
-        addToQueue = new AddToQueue(); // Initialize the private inner class object
+        // Private inner class object for adding data into dataQ object
+        AddToQueue addToQueue = new AddToQueue(); // Initialize the private inner class object
 
         // Execute the private inner class on an external thread different from the
         // javafx
@@ -169,7 +171,7 @@ public class App extends Application {
     }
 
     // Object responsible for animating the insertion of data into the line chart
-    private AnimationTimer animationTimer = new AnimationTimer() {
+    private final AnimationTimer animationTimer = new AnimationTimer() {
         @Override
         public void handle(final long now) {
             addDataToSeries();
@@ -301,10 +303,9 @@ public class App extends Application {
             }
             final double dataValue = (double) dataQ.remove();
 
-            System.out.println(seriesData + " " + dataValue);
-            dSeries.getData().add(new XYChart.Data<Number, Number>(seriesData,
+            dSeries.getData().add(new XYChart.Data<>(seriesData,
                     dataValue));
-            tempSeries.getData().add(new XYChart.Data<Number, Number>(seriesData,
+            tempSeries.getData().add(new XYChart.Data<>(seriesData,
                     dataValue));
             seriesData += unit;
         }
@@ -326,14 +327,14 @@ public class App extends Application {
 
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         launch(args);
     }
 
     private class AddToQueue implements Runnable {
 
         private double i = 0.00;
-        private double unit = 1 / samplingFreq; // Variable responsible for the number of entries made in a second
+        private final double unit = 1 / samplingFreq; // Variable responsible for the number of entries made in a second
 
         @Override
         public void run() {
@@ -350,9 +351,7 @@ public class App extends Application {
                 // executor.execute(this);
                 // Thread.currentThread().start();
             } catch (InterruptedException e) {
-                e.printStackTrace();
-            } finally {
-                // Do nothing
+                //  Do nothing
             }
         }
     }
