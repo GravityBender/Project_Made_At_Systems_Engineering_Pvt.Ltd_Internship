@@ -1,3 +1,5 @@
+package com.systemsengineering;
+
 import javafx.scene.chart.NumberAxis;
 
 //  Class to define the axes of the line chart

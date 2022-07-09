@@ -1,3 +1,5 @@
+package com.systemsengineering;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -33,7 +35,6 @@ import javafx.stage.FileChooser.ExtensionFilter;
 public class App extends Application {
 
     private BorderPane root;
-    private Client client;
     private ConcurrentLinkedQueue<Number> dataQ; // Queue in which server data is stored
     private ExecutorService executor; // Executor object to run Client Socket on another thread other than JavaFX
                                       // thread
@@ -115,9 +116,8 @@ public class App extends Application {
             // Check if the TextFields of the ip address and port are not null and are
             // Strings and integers respectively
             // If not then display Alert Boxes
-            if (ipField.getText().toString() != "") {
+            if (!ipField.getText().toString().equals("")) {
                 ip = ipField.getText().toString();
-                ipFlag = true;
             } else {
                 Alert alert = new Alert(AlertType.ERROR, "IP Field left blank!",
                         ButtonType.CLOSE, ButtonType.OK);
@@ -126,7 +126,6 @@ public class App extends Application {
             }
             try {
                 port = Integer.parseInt(portField.getText().toString());
-                portFlag = true;
             } catch (NumberFormatException e) {
                 Alert alert = new Alert(AlertType.ERROR, "Not a valid port number!",
                         ButtonType.CLOSE, ButtonType.OK);
@@ -161,23 +160,12 @@ public class App extends Application {
 
             // Pass the ip address, port number, Queue and button object to Cliet
             // Constructor
-            client = new Client(ip, port, dataQ, proceedBtn);
+            Client client = new Client(ip, port, dataQ, proceedBtn);
             client.openSocket();
-
-            // if (!client.checkIfConnected()) {
-            // Alert alert = new Alert(AlertType.WARNING, "Server Not Reachable!",
-            // ButtonType.CLOSE, ButtonType.OK);
-            // alert.show();
-            // System.out.println("Lol");
-            // } else {
-            // executor.execute(client);
-            // System.out.println(lol);
-            // return true;
-            // }
 
             // Start the client socket
             executor.execute(client);
-            System.out.println("lol");
+
             return true;
 
         } catch (SocketException e) {
@@ -207,9 +195,7 @@ public class App extends Application {
         hBox1.setAlignment(Pos.CENTER);
         root.setBottom(hBox1);
 
-        proceedBtn.setOnAction((e) -> {
-            thirdScreen();
-        });
+        proceedBtn.setOnAction((e) -> thirdScreen());
     }
 
     // Method to animate the LineChart using the AnimationTimer interface
@@ -235,9 +221,9 @@ public class App extends Application {
                 break;
             }
             final double dataValue = (double) dataQ.remove();
-            System.out.println(xValue + " " + dataValue);
+
             dataSeries.getData()
-                    .add(new XYChart.Data<Number, Number>(xValue, dataValue));
+                    .add(new XYChart.Data<>(xValue, dataValue));
             xValue += unit;
         }
 
@@ -252,9 +238,7 @@ public class App extends Application {
         // method
         Charts chart2 = new Charts(new Axes());
         XYChart.Series<Number, Number> series = new XYChart.Series<>();
-        dataSeries.getData().forEach(item -> {
-            series.getData().add(item);
-        });
+        dataSeries.getData().forEach(item -> series.getData().add(item));
 
         chart2.setDataSeries(series);
 
@@ -287,9 +271,7 @@ public class App extends Application {
             hBox1.getChildren().clear();
             hBox1.getChildren().addAll(btn2, btn4);
 
-            btn4.setOnAction((e2) -> {
-                thirdScreen();
-            });
+            btn4.setOnAction((e2) -> thirdScreen());
 
         });
 
@@ -300,15 +282,11 @@ public class App extends Application {
             hBox1.getChildren().clear();
             hBox1.getChildren().addAll(btn1, btn4);
 
-            btn4.setOnAction((e2) -> {
-                thirdScreen();
-            });
+            btn4.setOnAction((e2) -> thirdScreen());
 
         });
 
-        btn3.setOnAction((e) -> {
-            fourthScreen();
-        });
+        btn3.setOnAction((e) -> fourthScreen());
 
     }
 
@@ -319,18 +297,14 @@ public class App extends Application {
 
         Charts chart4 = new Charts(new Axes());
         XYChart.Series<Number, Number> series = new XYChart.Series<>();
-        dataSeries.getData().forEach(item -> {
-            series.getData().add(new XYChart.Data<Number, Number>(item.getXValue(), item.getYValue()));
-        });
+        dataSeries.getData().forEach(item -> series.getData().add(new XYChart.Data<>(item.getXValue(), item.getYValue())));
 
         chart4.setDataSeries(series);
         root.setCenter(chart4.getLineChart());
 
         Charts tempChart = new Charts(new Axes());
         XYChart.Series<Number, Number> tempSeries = new XYChart.Series<>();
-        dataSeries.getData().forEach(item -> {
-            tempSeries.getData().add(new XYChart.Data<Number, Number>(item.getXValue(), item.getYValue()));
-        });
+        dataSeries.getData().forEach(item -> tempSeries.getData().add(new XYChart.Data<>(item.getXValue(), item.getYValue())));
         tempChart.setDataSeries(tempSeries);
 
         FlowPane fPane1 = new FlowPane();
@@ -405,14 +379,10 @@ public class App extends Application {
                 vBox1.getChildren().add(proceedBtn);
             }
 
-            proceedBtn.setOnAction((e2) -> {
-                fifthScreen(chart4);
-            });
+            proceedBtn.setOnAction((e2) -> fifthScreen(chart4));
         });
 
-        skipBtn.setOnAction((e) -> {
-            fifthScreen(tempChart);
-        });
+        skipBtn.setOnAction((e) -> fifthScreen(tempChart));
 
         root.setBottom(vBox1);
 
@@ -450,9 +420,7 @@ public class App extends Application {
             hBox1.getChildren().clear();
             hBox1.getChildren().addAll(btn2, btn3, btn4);
 
-            btn4.setOnAction((e) -> {
-                saveAsCSV(modifiedChart.getDataSeries());
-            });
+            btn4.setOnAction((e) -> saveAsCSV(modifiedChart.getDataSeries()));
 
         });
 
@@ -462,15 +430,11 @@ public class App extends Application {
             hBox1.getChildren().clear();
             hBox1.getChildren().addAll(btn1, btn3, btn4);
 
-            btn4.setOnAction((e) -> {
-                saveAsCSV(chart5.getDataSeries());
-            });
+            btn4.setOnAction((e) -> saveAsCSV(chart5.getDataSeries()));
 
         });
 
-        btn3.setOnAction((e) -> {
-            thirdScreen();
-        });
+        btn3.setOnAction((e) -> thirdScreen());
     }
 
     // Method to export the chart data series in the form of a .csv file and save it
@@ -508,10 +472,8 @@ public class App extends Application {
 
         List<Complex> cArrayList = new ArrayList<>();
 
-        dataSeries1.getData().forEach(item -> {
-            cArrayList.add(new Complex((double) item.getXValue(),
-                    (double) item.getYValue()));
-        });
+        dataSeries1.getData().forEach(item -> cArrayList.add(new Complex((double) item.getXValue(),
+                (double) item.getYValue())));
 
         // int size =(int) convertToNearestPowerOfTwo(dataSeries1.getData().size());
         // cArrayList.subList((int) Math.pow(2, size), cArrayList.size()).clear();
@@ -523,10 +485,10 @@ public class App extends Application {
 
         double j = 0.00;
         double unit = (1 / samplingFreq) * 10;
-        for (int i = 0; i < result.length; i++) {
-            System.out.println(result[i]);
-            dataSeries2.getData().add(new XYChart.Data<Number, Number>(j,
-                    result[i].getReal()));
+        for (Complex complex : result) {
+
+            dataSeries2.getData().add(new XYChart.Data<>(j,
+                    complex.getReal()));
             j += unit;
         }
 

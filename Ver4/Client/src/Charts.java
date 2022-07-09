@@ -1,3 +1,5 @@
+package com.systemsengineering;
+
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 

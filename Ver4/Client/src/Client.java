@@ -1,7 +1,8 @@
+package com.systemsengineering;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javafx.scene.control.Button;
@@ -21,12 +22,6 @@ public class Client implements Runnable {
     }
 
     // Initialise the data members
-    public Client(String ip, int port, ConcurrentLinkedQueue<Number> dataQ) {
-        this.dataQ = dataQ;
-        this.ip = ip;
-        this.port = port;
-    }
-
     public Client(String ip, int port, ConcurrentLinkedQueue<Number> dataQ, Button proceedBtn) {
         this.dataQ = dataQ;
         this.ip = ip;
@@ -58,7 +53,7 @@ public class Client implements Runnable {
         }
     }
 
-    public void openSocket() throws UnknownHostException, IOException {
+    public void openSocket() throws IOException {
         clientSocket = new Socket(ip, port);
     }
 
